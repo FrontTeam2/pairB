@@ -1,75 +1,36 @@
-import getData from 'Apis/searchApi'
 import { useAuth } from 'Contexts/auth'
-import useDebouncing from 'Hooks/useDebouncing'
-import { useEffect } from 'react'
 import styled from 'styled-components'
 
-const maxSearchList = 5
-
-function SearchList({
-	searchInput,
-	setSearchInput,
-	searchList,
-	setSearchList,
-	chooseInput,
-	recentSearchArray,
-	showSearchList,
-	setSearchResultList,
-	setShowSearchList,
-}) {
+function SearchList() {
 	const auth = useAuth()
-	const debounce = useDebouncing(searchInput, { setSearchList })
 
-	// 디바운스 적용
-	// searchInput값이 바뀔 때마다 안에 정의 실행
-	useEffect(() => {
-		getData(`${debounce}`)
-			.then(data => {
-				if (typeof data !== 'string') {
-					return setSearchList(data.slice(0, maxSearchList))
-				}
-				setSearchList(data)
-			})
-			.catch(error => {
-				console.log(error)
-			})
-	}, [debounce])
-
-	// 클릭으로 데이터 가져오기
-	function onClickSearch(value) {
-		console.log('클릭됨!')
-		getData(value)
-			.then(data => {
-				setSearchResultList(data)
-				setSearchList([])
-			})
-			.catch(error => {
-				console.log(error)
-			})
-		auth.search(value)
-		setSearchInput(value)
-		setShowSearchList(false)
+	if (auth.searchList === '검색 결과가 없습니다.') {
+		return <p>{auth.searchList}</p>
 	}
 
-	if (searchList == '검색 결과가 없습니다.') {
-		return (
-			<>
-				<p>{searchList}</p>
-			</>
-		)
+	if (!auth.showSearchList) {
+		return
 	}
 
 	return (
 		<ResultWrapper>
-			{searchInput == '' ? (
+			{auth.searchInput == '' ? (
 				<>
-					<h4>최근 검색어</h4>
-
-					{recentSearchArray ? (
+					<div>
+						<h4>최근 검색어</h4>
+					</div>
+					<SplitLine />
+					{auth.get() ? (
 						<>
-							{recentSearchArray.map((item, index) => (
-								<ResultBox key={item} onClick={() => onClickSearch(item)}>
-									{index === chooseInput ? (
+							{auth.get().map((item, index) => (
+								<ResultBox
+									key={item}
+									onMouseDown={event => {
+										event.stopPropagation()
+										auth.onSubmitSearch(item)
+									}}
+								>
+									{index === auth.chooseInput ? (
 										<h3 style={{ backgroundColor: 'pink' }}>{item}</h3>
 									) : (
 										<p>{item}</p>
@@ -85,19 +46,25 @@ function SearchList({
 				</>
 			) : (
 				<>
-					{showSearchList && (
+					{auth.showSearchList && (
 						<>
-							{searchList.map((item, index) => (
-								<ResultBox key={index} onClick={() => onClickSearch(item)}>
-									{index === chooseInput ? (
-										<h4 style={{ backgroundColor: '#f7f7f7' }}>
-											{item.includes(searchInput) ? (
+							{auth.searchList.map((item, index) => (
+								<ResultBox
+									key={index}
+									onMouseDown={event => {
+										event.stopPropagation()
+										auth.onSubmitSearch(item)
+									}}
+								>
+									{index === auth.chooseInput ? (
+										<h4 style={{ backgroundColor: 'pink' }}>
+											{item.includes(auth.searchInput) ? (
 												<>
-													{item.split(searchInput)[0]}
+													{item.split(auth.searchInput)[0]}
 													<span style={{ color: '#ff0000' }}>
-														{searchInput}
+														{auth.searchInput}
 													</span>
-													{item.split(searchInput)[1]}
+													{item.split(auth.searchInput)[1]}
 												</>
 											) : (
 												item
@@ -105,13 +72,13 @@ function SearchList({
 										</h4>
 									) : (
 										<p>
-											{item.includes(searchInput) ? (
+											{item.includes(auth.searchInput) ? (
 												<>
-													{item.split(searchInput)[0]}
+													{item.split(auth.searchInput)[0]}
 													<span style={{ color: '#ff0000' }}>
-														{searchInput}
+														{auth.searchInput}
 													</span>
-													{item.split(searchInput)[1]}
+													{item.split(auth.searchInput)[1]}
 												</>
 											) : (
 												item
@@ -130,21 +97,20 @@ function SearchList({
 export default SearchList
 
 const ResultWrapper = styled.div`
-	padding: 2rem;
-
-	& > h4 {
-		margin-bottom: 1rem;
-	}
+	padding: 5px 10px;
+	margin-top: 1rem;
+	border: 0.2rem solid gray;
+	border-radius: 0.5rem;
 `
 
 const ResultBox = styled.div`
 	:hover {
 		cursor: pointer;
-		background-color: #f7f7f7;
-		/* font-size: large; */
+		background-color: pink;
+		font-size: 13px;
+		font-weight: bold;
 	}
-
-	& p {
-		font-size: ${({ theme }) => theme.FONT_SIZE.small};
-	}
+`
+const SplitLine = styled.hr`
+	margin: 0.5rem 0;
 `

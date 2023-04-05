@@ -1,16 +1,19 @@
+import { useAuth } from 'Contexts/auth'
 import styled from 'styled-components'
 
-function SearchResultList({ searchResultList }) {
-	if (searchResultList == '검색 결과가 없습니다.' || !searchResultList.length) {
+function SearchResultList() {
+	const auth = useAuth()
+
+	if (auth.searchResultList === '검색 결과가 없습니다.') {
 		return
 	}
 
 	return (
 		<ResultList>
-			{searchResultList.length ? (
+			{auth.searchResultList.length ? (
 				<>
-					<h4>검색해서 나온 리스트</h4>
-					{searchResultList.map((result, index) => (
+					<h1>검색해서 나온 리스트</h1>
+					{auth.searchResultList.map((result, index) => (
 						<p key={index}>{result}</p>
 					))}
 				</>
@@ -23,16 +26,9 @@ function SearchResultList({ searchResultList }) {
 export default SearchResultList
 
 const ResultList = styled.div`
-	background-color: var(--color--white);
-	border-top: 0.2rem solid gray;
-
-	padding: 2rem;
-
-	& > h4 {
-		margin-bottom: 1rem;
-	}
-
-	& > p {
-		font-size: ${({ theme }) => theme.FONT_SIZE.small};
-	}
+	background-color: #bfffb9;
+	border: 0.2rem solid gray;
+	border-radius: 0.5rem;
+	padding: 1rem;
+	margin-top: 1rem;
 `

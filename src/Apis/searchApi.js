@@ -20,5 +20,4 @@ const getData = async params => {
 		return err.response.data
 	}
 }
-
 export default getData

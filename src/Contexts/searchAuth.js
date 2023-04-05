@@ -14,7 +14,9 @@ const AuthContext = createContext()
 export const useAuth = () => useContext(AuthContext)
 
 function AuthProvider({ children }) {
-	const [searchToken, setSearchToken] = useState()	// 토큰 관리
+	const maxSearchList = 5 // 최대 저장할 최근 검색어 갯수
+
+	const [searchToken, setSearchToken] = useState() // 토큰 관리
 	const [searchInput, setSearchInput] = useState('') // 검색창에 있는 value 관리
 	const [searchList, setSearchList] = useState([]) // 연관검색어 list관리
 	const [searchResultList, setSearchResultList] = useState([]) // 검색결과 list관리
@@ -57,7 +59,7 @@ function AuthProvider({ children }) {
 		getData(value)
 			.then(data => {
 				setSearchResultList(data)
-				setSearchList(data)
+				setSearchList(data.slice(0, maxSearchList))
 			})
 			.catch(error => {
 				console.log(error)
